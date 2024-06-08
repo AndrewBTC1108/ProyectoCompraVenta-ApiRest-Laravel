@@ -7,6 +7,7 @@ use App\Models\PagoCuota;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\StorePrestamoRequest;
+use App\Http\Requests\UpdatePrestamoRequest;
 
 class PrestamoController extends Controller
 {
@@ -64,16 +65,61 @@ class PrestamoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePrestamoRequest $request, string $id)
     {
-        //
+        // Validar los datos entrantes
+        $data = $request->validated();
+
+        // Encontrar el préstamo existente
+        $prestamo = Prestamo::findOrFail($id);
+
+        // Aplicar el porcentaje y calcular el nuevo total y valor de cuota
+        $total = ($data['valor_prestado'] * $data['porcentaje'] / 100) + $data['valor_prestado'];
+        $valorCuota = round($total / $data['cuotas'], 2);
+
+        // Actualizar el préstamo con los nuevos datos
+        $prestamo->update([
+            'fecha' => $data['fecha'],
+            'valor_prestado' => $total,
+            'cuotas' => $data['cuotas'],
+            'porcentaje' => $data['porcentaje'],
+            'producto_id' => $data['producto_id'],
+            'cliente_id' => $data['cliente_id'],
+        ]);
+
+        // Eliminar las cuotas anteriores
+        PagoCuota::where('prestamo_id', $prestamo->id)->delete();
+
+        // Calcular y crear las nuevas cuotas
+        $fechaPago = new \DateTime($data['fecha']);
+        for ($i = 1; $i <= $data['cuotas']; $i++) {
+            $fechaPago->modify('+1 month');
+            PagoCuota::create([
+                'prestamo_id' => $prestamo->id,
+                'numero_cuota' => $i,
+                'fecha_pago' => $fechaPago->format('Y-m-d'),
+                'monto_pago' => $valorCuota,
+                'pagado' => 0,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Prestamo actualizado correctamente'
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id) :JsonResponse
     {
-        //
+        //encontrar prestamo
+        $prestamo = Prestamo::findOrFail($id);
+
+        $prestamo->delete();
+
+        return response()->json([
+            'message' => 'Prestamo eliminado'
+        ]);
     }
 }
