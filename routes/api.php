@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PrestamoController;
+use App\Http\Controllers\ProductoController;
 
 Route::middleware(['auth:sanctum'])->group( function() {
     Route::get('/user', function (Request $request) {
@@ -19,6 +20,8 @@ Route::middleware(['auth:sanctum'])->group( function() {
     Route::apiResource('/clientes', ClienteController::class);
 
     Route::apiResource('/prestamos', PrestamoController::class);
+
+    Route::apiResource('/productos', ProductoController::class);
 });
 
 Route::middleware('guest')->group(function() {

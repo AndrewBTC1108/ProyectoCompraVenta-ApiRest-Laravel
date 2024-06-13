@@ -12,7 +12,7 @@ class Producto extends Model
     protected $fillable = [
         'nombre',
         'tipo',
-        'disponible',
+        'observaciones',
         'cliente_id'
     ];
 

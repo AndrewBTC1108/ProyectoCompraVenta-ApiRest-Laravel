@@ -17,7 +17,7 @@ return new class extends Migration
             $table->double('valor_prestado');
             $table->integer('cuotas');
             $table->integer('porcentaje');
-            $table->foreignId('producto_id')->constrained()->onDelete('cascade');
+            $table->foreignId('producto_id')->constrained()->onDelete('cascade');//producto_id debe ser un valor válido que existe en la tabla productos.
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
             $table->boolean('disponible')->default(1);
             $table->timestamps();

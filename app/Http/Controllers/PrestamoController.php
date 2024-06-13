@@ -8,15 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\StorePrestamoRequest;
 use App\Http\Requests\UpdatePrestamoRequest;
+use App\PrestamoTrait;
 
 class PrestamoController extends Controller
 {
+    use PrestamoTrait;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        //retornara los prestamos activos y los antiguos
     }
 
     /**
@@ -26,6 +28,14 @@ class PrestamoController extends Controller
     {
         //validar
         $data = $request->validated();
+        //validar que el producto no pertenezca el cliente
+        if (!$this->checkIfProductBelongsToCliente($data['producto_id'], $data['cliente_id'])) {
+            return $this->generateErrorResponse('El producto no pertenece al cliente.', 422);
+        }
+        //validar que haya un pestamo ya con ese producto y cliente
+        if ($this->PendingPrestamo($data['producto_id'], $data['cliente_id'])) {
+            return $this->generateErrorResponse('Ya hay un prestamo pendiente con el producto y el cliente seleccionados.', 422);
+        }
         //aplicar porcentaje del 7% al dinero
         $total = ($data['valor_prestado'] * $data['porcentaje'] / 100) + $data['valor_prestado'];
         //redondear decimales
@@ -69,6 +79,11 @@ class PrestamoController extends Controller
     {
         // Validar los datos entrantes
         $data = $request->validated();
+
+        //validar que el producto no pertenezca el cliente
+        if (!$this->checkIfProductBelongsToCliente($data['producto_id'], $data['cliente_id'])) {
+            return $this->generateErrorResponse('El producto no pertenece al cliente.', 422);
+        }
 
         // Encontrar el préstamo existente
         $prestamo = Prestamo::findOrFail($id);

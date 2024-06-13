@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('tipo');
-            $table->boolean('disponible')->default(1);
+            $table->string('observaciones');
             $table->foreignId('cliente_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
