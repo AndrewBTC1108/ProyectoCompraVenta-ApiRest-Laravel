@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('fecha_pago');
             $table->double('monto_pago');
             $table->boolean('pagado')->default(0);
+            $table->boolean('recordado')->default(0);
             $table->timestamps();
         });
     }

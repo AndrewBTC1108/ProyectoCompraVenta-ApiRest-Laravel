@@ -23,7 +23,7 @@ class StoreProductoRequest extends FormRequest
     {
         return [
             'nombre' => ['required'],
-            'tipo' => ['required'],
+            'tipo' => ['required', 'in:joya,vehiculo,electrodomestico'],
             'observaciones' => ['required'],
             'cliente_id' => ['required', 'exists:clientes,id']
         ];
@@ -34,6 +34,7 @@ class StoreProductoRequest extends FormRequest
         return [
             'nombre.required' => 'El nombre es obligatorio',
             'tipo.required' => 'El tipo de producto es obligatorio',
+            'tipo.in' => 'Tipo no permitido',
             'observaciones.required' => 'Las observaciones son requeridas',
             'cliente_id.required' => 'El cliente es obligatorio.',
             'cliente_id.exists' => 'El cliente seleccionado no existe.',

@@ -25,17 +25,29 @@ class UpdateProductoRequest extends FormRequest
         if($method == 'PUT'){
             return [
                 'nombre' => ['required'],
-                'tipo' => ['required'],
+                'tipo' => ['required', 'in:joya,vehiculo,electrodomestico'],
                 'observaciones' => ['required'],
                 'cliente_id' => ['required', 'exists:clientes,id']
             ];
         } else {
             return [
                 'nombre' => ['sometimes', 'required'],
-                'tipo' => ['sometimes', 'required'],
+                'tipo' => ['sometimes', 'required', 'in:joya,vehiculo,electrodomestico'],
                 'observaciones' => ['sometimes', 'required'],
                 'cliente_id' => ['sometimes', 'required', 'exists:clientes,id']
             ];
         }
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.required' => 'El nombre es obligatorio',
+            'tipo.required' => 'El tipo de producto es obligatorio',
+            'tipo.in' => 'Tipo no permitido',
+            'observaciones.required' => 'Las observaciones son requeridas',
+            'cliente_id.required' => 'El cliente es obligatorio.',
+            'cliente_id.exists' => 'El cliente seleccionado no existe.',
+        ];
     }
 }

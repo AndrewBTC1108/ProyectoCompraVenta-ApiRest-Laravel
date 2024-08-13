@@ -25,7 +25,7 @@ class StorePrestamoRequest extends FormRequest
             'fecha' => ['required', 'date', 'after_or_equal:' . now()->toDateString()],
             'valor_prestado' => ['required', 'numeric'],
             'cuotas' => ['required', 'integer','min:1', 'max:5'],
-            'porcentaje' => ['required', 'integer'],
+            'porcentaje' => ['required', 'integer', 'min:7', 'max:7'],
             'producto_id' => ['required', 'exists:productos,id'],
             'cliente_id' => ['required', 'exists:clientes,id']
         ];
@@ -45,6 +45,8 @@ class StorePrestamoRequest extends FormRequest
             'cuotas.max' => 'El número de cuotas no puede ser mayor a 5.',
             'porcentaje.required' => 'El porcentaje es obligatorio.',
             'porcentaje.integer' => 'El porcentaje debe ser un número entero.',
+            'porcentaje.min' => 'Porcentaje no valido.',
+            'porcentaje.max' => 'Porcentaje no valido.',
             'producto_id.required' => 'El producto es obligatorio.',
             'producto_id.exists' => 'El producto seleccionado no existe.',
             'cliente_id.required' => 'El cliente es obligatorio.',

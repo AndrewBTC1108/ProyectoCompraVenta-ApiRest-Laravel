@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\StorePrestamoRequest;
 use App\Http\Requests\UpdatePrestamoRequest;
+use App\Http\Resources\PrestamoResource;
 use App\PrestamoTrait;
 
 class PrestamoController extends Controller
@@ -16,9 +17,42 @@ class PrestamoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //retornara los prestamos activos y los antiguos
+        $cliente_id = $request->get('cliente_id');
+        $pagePActive = $request->get('pagePActive', 1); // pagePActive por defecto es 1
+        $pagePPrevious = $request->get('pagePPrevious', 1); // pagePPrevious por defecto es 1
+        // Obtener los préstamos activos paginados
+        $prestamosActivos = Prestamo::where('cliente_id', $cliente_id)
+            ->where('disponible', 1)
+            ->select(['id', 'fecha', 'valor_prestado', 'cuotas', 'porcentaje', 'total', 'producto_id'])
+            ->with(['producto'])
+            ->paginate(6, ['*'], 'pagePActive', $pagePActive);
+
+        // Obtener los préstamos anteriores paginados
+        $prestamosAnteriores = Prestamo::where('cliente_id', $cliente_id)
+            ->where('disponible', 0)
+            ->select(['id', 'fecha', 'valor_prestado', 'cuotas', 'porcentaje', 'total', 'producto_id'])
+            ->with(['producto'])
+            ->paginate(6, ['*'], 'pagePPrevious', $pagePPrevious);
+
+        return response()->json([
+            'prestamosActivos' => $prestamosActivos,
+            'prestamosAnteriores' => $prestamosAnteriores
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id) : JsonResponse
+    {
+        $prestamo = Prestamo::findOrFail($id);
+        //El método get() devuelve una colección de resultados, incluso si solo hay un resultado.
+        $prestamoCuotas = $prestamo->pagosCuotas()
+            ->get(['id', 'numero_cuota', 'fecha_pago', 'monto_pago', 'pagado']);
+
+        return response()->json($prestamoCuotas);
     }
 
     /**
@@ -34,7 +68,7 @@ class PrestamoController extends Controller
         }
         //validar que haya un pestamo ya con ese producto y cliente
         if ($this->PendingPrestamo($data['producto_id'], $data['cliente_id'])) {
-            return $this->generateErrorResponse('Ya hay un prestamo pendiente con el producto y el cliente seleccionados.', 422);
+            return $this->generateErrorResponse('Ya hay un prestamo pendiente con el producto seleccionado.', 422);
         }
         //aplicar porcentaje del 7% al dinero
         $total = ($data['valor_prestado'] * $data['porcentaje'] / 100) + $data['valor_prestado'];
@@ -44,9 +78,10 @@ class PrestamoController extends Controller
         //crearPrestamo
         $prestamo = Prestamo::create([
             'fecha' => $data['fecha'],
-            'valor_prestado' => $total,
+            'valor_prestado' => $data['valor_prestado'],
             'cuotas' => $data['cuotas'],
             'porcentaje' => $data['porcentaje'],
+            'total' => $total,
             'producto_id' => $data['producto_id'],
             'cliente_id' => $data['cliente_id'],
         ]);
@@ -95,9 +130,10 @@ class PrestamoController extends Controller
         // Actualizar el préstamo con los nuevos datos
         $prestamo->update([
             'fecha' => $data['fecha'],
-            'valor_prestado' => $total,
+            'valor_prestado' => $data['valor_prestado'],
             'cuotas' => $data['cuotas'],
             'porcentaje' => $data['porcentaje'],
+            'total' => $total,
             'producto_id' => $data['producto_id'],
             'cliente_id' => $data['cliente_id'],
         ]);

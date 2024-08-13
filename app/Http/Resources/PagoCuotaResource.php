@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PrestamoResource extends JsonResource
+class PagoCuotaResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +15,10 @@ class PrestamoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'cliente_id' => new ClienteResource($this->whenLoaded('cliente')),
+            'id' => $this->id,
+            'prestamo_id' => new PrestamoResource($this->whenLoaded('prestamo')),
+            'fecha_pago' => $this->fecha_pago,
+            'monto_pago' => $this->monto_pago,
         ];
     }
 }

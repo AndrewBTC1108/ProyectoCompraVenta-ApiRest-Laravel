@@ -16,8 +16,13 @@ class Prestamo extends Model
         'valor_prestado',
         'cuotas',
         'porcentaje',
+        'total',
         'producto_id',
         'cliente_id'
+    ];
+
+    protected $hidden = [
+        'producto_id'
     ];
     //relacion de uno a muchos
     public function pagosCuotas() : HasMany
@@ -27,11 +32,11 @@ class Prestamo extends Model
     //relacion de pertenencia
     public function cliente() : BelongsTo
     {
-        return $this->belongsTo(Cliente::class)->select(['id', 'cedula', 'nombre', 'apellido']);
+        return $this->belongsTo(Cliente::class);
     }
 
     public function producto() : BelongsTo
     {
-        return $this->belongsTo(Producto::class)->select(['id', 'nombre', 'tipo']);
+        return $this->belongsTo(Producto::class)->select(['id', 'nombre']);
     }
 }
